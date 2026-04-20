@@ -1,6 +1,6 @@
 import type { ISODateString } from "./Global.types";
 
-export type PedidoOkProduto = {
+export type Produtos_PedidoOkProduto = {
     excluido: boolean;
     codigo: string
     observacao: string;
@@ -27,19 +27,19 @@ export type PedidoOkProduto = {
     referencia: string;
 }
 
-export type BuscarTodosRespOk = {
+export type Produtos_BuscarTodosRespOk = {
     href_proxima_pagina: string | null;
-    produtos: Array<PedidoOkProduto>;
+    produtos: Array<Produtos_PedidoOkProduto>;
 }
 
-export type BuscarPorIdResoOk = { produto: PedidoOkProduto }
-export type InserirRespOk = { produto: PedidoOkProduto }
-export type AlterarProductRespOk = { produto: PedidoOkProduto }
-export type AlterarProductParcialRespOk = { produto: PedidoOkProduto }
-export type ReativarProductRespOk = { produto: PedidoOkProduto }
+export type Produtos_BuscarPorIdResoOk = { produto: Produtos_PedidoOkProduto }
+export type Produtos_InserirRespOk = { produto: Produtos_PedidoOkProduto }
+export type Produtos_AlterarProductRespOk = { produto: Produtos_PedidoOkProduto }
+export type Produtos_AlterarProductParcialRespOk = { produto: Produtos_PedidoOkProduto }
+export type Produtos_ReativarProductRespOk = { produto: Produtos_PedidoOkProduto }
 
-export type InserirProdBody = Omit<PedidoOkProduto, "excluido" | "ultima_alteracao" | "id">;
+export type Produtos_InserirProdBody = Omit<Produtos_PedidoOkProduto, "excluido" | "ultima_alteracao" | "id">;
 
 
-export type AlterarProduct = Omit<PedidoOkProduto, "excluido" | "ultima_alteracao" | "id">
-export type AlterarProductParcial = Partial<AlterarProduct>;
+export type Produtos_AlterarProduct = Omit<Produtos_PedidoOkProduto, "excluido" | "ultima_alteracao" | "id">
+export type Produtos_AlterarProductParcial = Partial<Produtos_AlterarProduct>;
