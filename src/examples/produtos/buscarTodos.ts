@@ -30,7 +30,7 @@ async function main(): Promise<void> {
      */
     {
         const resposta = await client.produtos.buscarTodos();
-    
+
         console.log("Próxima página:", resposta.href_proxima_pagina);
         console.log("Quantidade de produtos nesta página:", resposta.produtos.length);
         console.dir(resposta.produtos[0], { depth: null });
@@ -42,40 +42,41 @@ async function main(): Promise<void> {
      */
     {
         const href = "https://api.pedidook.com.br/v1/produtos/?pagina=2";
-        const resposta = await client.produtos.buscarTodos(href);
-    
+        const resposta = await client.produtos.buscarTodos({ href });
+
         console.log("Próxima página:", resposta.href_proxima_pagina);
         console.log("Quantidade de produtos nesta página:", resposta.produtos.length);
     }
 
-        /**
-     * Exemplo 3:
-     * Percorrer páginas até encontrar um produto pelo código
-     */
+    /**
+ * Exemplo 3:
+ * Percorrer páginas até encontrar um produto pelo código
+ */
     {
         let href: string | undefined = undefined;
         let paginaAtual = 1;
         let produtoEncontrado: unknown = undefined;
-    
+
         do {
             console.log(`Buscando página ${paginaAtual}...`);
-    
-            const resposta = await client.produtos.buscarTodos(href);
-    
+
+            const objHref = href ? { href } : undefined;
+            const resposta = await client.produtos.buscarTodos(objHref);
+
             produtoEncontrado = resposta.produtos.find((produto) => {
                 return produto.codigo === "APICOMP1";
             });
-    
+
             if (produtoEncontrado) {
                 console.log("Produto encontrado:");
                 console.dir(produtoEncontrado, { depth: null });
                 break;
             }
-    
+
             href = resposta.href_proxima_pagina ?? undefined;
             paginaAtual++;
         } while (href);
-    
+
         if (!produtoEncontrado) {
             console.log('Produto com código "APICOMP1" não foi encontrado.');
         }
