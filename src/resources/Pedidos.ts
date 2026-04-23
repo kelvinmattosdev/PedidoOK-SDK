@@ -1,12 +1,25 @@
 import type { HttpClient } from "../clients/HttpClient";
-import type { Pedidos_AlterarCabecalhoObjReq, Pedidos_AlterarCabecalhoRespOk, Pedidos_AlterarItemObjReq, Pedidos_AlterarItemRespOk, Pedidos_BuscarPorIdRespOk, Pedidos_BuscarTodosObjReq, Pedidos_BuscarTodosRespOk, Pedidos_InserirItemObjReq, Pedidos_InserirItemRespOk, Pedidos_InserirPedidoObjReq, Pedidos_InserirPedidoRespOk, Pedidos_ReativarPedidoRespOk } from "../types/Pedidos.types";
+import type {
+    Pedidos_ReativarPedidoRespOk,
+    Pedidos_AlterarCabecalhoRespOk,
+    Pedidos_AlterarCabecalhoObjReq,
+    Pedidos_InserirPedidoObjReq,
+    Pedidos_InserirPedidoRespOk,
+    Pedidos_AlterarItemObjReq,
+    Pedidos_AlterarItemRespOk,
+    Pedidos_BuscarPorIdRespOk,
+    Pedidos_BuscarTodosObjReq,
+    Pedidos_BuscarTodosRespOk,
+    Pedidos_InserirItemObjReq,
+    Pedidos_InserirItemRespOk 
+} from "../types/Pedidos.types";
 
 export class PedidoOk_Pedidos {
-    private readonly path: string;
+    private readonly path: "/pedidos";
     constructor(private readonly http: HttpClient) { this.path = "/pedidos"; }
 
     private paramsInUrl(params: Record<string, unknown> | undefined): string {
-        if (!params) return '';
+        if (!params) return "";
 
         const query = new URLSearchParams(
             Object.entries(params)
@@ -14,7 +27,21 @@ export class PedidoOk_Pedidos {
                 .map(([key, value]): [string, string] => [key, String(value)])
         ).toString();
 
-        return query ? `?${query}` : '';
+        return query ? `?${query}` : "";
+    }
+
+    private hrefToRelativePath(href: string): string {
+        try {
+            const url = new URL(href);
+            const relative = `${url.pathname}${url.search}`;
+            if (!relative.startsWith(this.path)) {
+                throw new Error(`O href não pertence ao recurso ${this.path}: ${href}`);
+            }
+            return relative;
+        } catch {
+            if (href.startsWith(this.path)) return href;
+            throw new Error(`Href inválido para ${this.path}: ${href}`);
+        }
     }
 
     /**
@@ -22,6 +49,12 @@ export class PedidoOk_Pedidos {
      * Todos os parâmetros são opcionais e podem ser combinados.
      */
     public async buscarTodos(obj?: Pedidos_BuscarTodosObjReq): Promise<Pedidos_BuscarTodosRespOk> {
+        if (obj && 'href' in obj) {
+            const path = this.hrefToRelativePath(obj.href);
+            const resp = await this.http.get<Pedidos_BuscarTodosRespOk>(path);
+            return resp;
+        }
+
         const path = this.path + this.paramsInUrl(obj);
         const resp = await this.http.get<Pedidos_BuscarTodosRespOk>(path);
         return resp;
@@ -48,7 +81,7 @@ export class PedidoOk_Pedidos {
      * Exclui um pedido do PedidoOK.
      * Em caso de sucesso, esse recurso retorna true.
      */
-    public async deletarPedido(id: string | number): Promise<Boolean> {
+    public async deletarPedido(id: string | number): Promise<boolean> {
         const path = this.path + `/${id}`;
         const resp = await this.http.delete(path);
         return resp;
@@ -59,7 +92,7 @@ export class PedidoOk_Pedidos {
      */
     public async reativarPedido(id: string | number): Promise<Pedidos_ReativarPedidoRespOk> {
         const path = this.path + `/${id}/undelete`;
-        const resp = await this.http.patch<Pedidos_ReativarPedidoRespOk>(path);
+        const resp = await this.http.patch<Pedidos_ReativarPedidoRespOk>(path, undefined);
         return resp;
     }
 
@@ -102,7 +135,7 @@ export class PedidoOk_Pedidos {
      * Exclui um item do pedido no PedidoOK.
      * Em caso de sucesso, esse recurso retorna true.
      */
-    public async deletarItem(id_pedido: string | number, id_produto: string | number): Promise<Boolean>{
+    public async deletarItem(id_pedido: string | number, id_produto: string | number): Promise<boolean> {
         const path = this.path + `/${id_pedido}/itens/${id_produto}`;
         const resp = await this.http.delete(path);
         return resp;

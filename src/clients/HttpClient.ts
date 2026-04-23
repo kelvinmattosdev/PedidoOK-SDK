@@ -1,9 +1,14 @@
-import chalk from "chalk";
 import type { HttpClientConfig, PedidoOkHeaders } from "../types/HttpClient.types";
-import type { RequestErrorResponse } from "../types/Global.types";
+
+type DeleteOptionsWithBody = {
+    body: true;
+};
+
+type DeleteOptionsWithoutBody = {
+    body?: false | undefined;
+};
 
 export class HttpClient {
-    //? Atributos essenciais para a classe
     private readonly token_pedidook: string;
     private readonly token_parceiro: string;
     private readonly urlBase: string;
@@ -12,136 +17,89 @@ export class HttpClient {
     constructor(config: HttpClientConfig) {
         this.token_pedidook = config.token_pedidook;
         this.token_parceiro = config.token_parceiro;
-        this.urlBase = "https://api.pedidook.com.br/" + ("v" + config.version);
+        this.urlBase = `https://api.pedidook.com.br/v${config.version}`;
 
         this.headers = {
             token_parceiro: this.token_parceiro,
             token_pedidook: this.token_pedidook,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+        };
+    }
+
+    private async parseResponseBody(req: Response): Promise<unknown | undefined> {
+        if (req.status === 204) return undefined;
+
+        const text = await req.text();
+        if (!text.trim()) return undefined;
+
+        try {
+            return JSON.parse(text);
+        } catch {
+            return text;
         }
     }
 
-    private validateResponse<T>(response: unknown): response is T {
-        const isError = (
-            typeof response === 'object' &&
-            response !== null &&
-            'erros' in response &&
-            Array.isArray(response.erros)
-        );
+    private async request<T>(
+        method: "GET" | "POST" | "PUT" | "PATCH",
+        path: string,
+        body?: unknown
+    ): Promise<T> {
+        const url = this.urlBase + path;
 
-        return !isError;
-    }
+        const req = await fetch(url, {
+            method,
+            headers: this.headers,
+            ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+        });
 
-    private isAPIErrorArray(value: unknown): value is RequestErrorResponse {
-        return (
-            typeof value === 'object' &&
-            value !== null &&
-            'erros' in value &&
-            Array.isArray(value.erros) &&
-            value.erros.every(
-                (item) => {
-                    return (
-                        typeof item === 'object' &&
-                        item !== null &&
-                        typeof item.codigo === 'number' &&
-                        typeof item.mensagem === 'string'
-                    )
-                }
-            )
-        )
-    }
+        const data = await this.parseResponseBody(req);
 
-    private returnResponse<T>(data: unknown): T {
-        if (this.validateResponse<T>(data)) {
-            return data;
-        } else {
-            if (this.isAPIErrorArray(data)) {
-                console.error(chalk.redBright(data.erros[0]?.mensagem ?? data));
-            }
-            throw new Error(`A API retornou erro: ${data}`);
+        if (data === undefined) {
+            throw new Error(`A resposta de ${method} em ${url} não retornou body.`);
         }
+
+        return data as T;
     }
 
     public async get<T>(path: string): Promise<T> {
-        const url = this.urlBase + path;
-        const req = await fetch(url, {
-            method: 'GET',
-            headers: this.headers
-        });
-
-        if (!req.ok) {
-            console.error(await req.text());
-            throw new Error(`Ocorreu um erro ao tentar acessar ${url}\n Erro: ${req.status}`)
-        }
-
-        const data = await req.json();
-        return this.returnResponse<T>(data);
+        return await this.request<T>("GET", path);
     }
 
-    public async post<T>(path: string, body: Record<string, any>): Promise<T> {
+    public async post<T>(path: string, body: unknown): Promise<T> {
+        return await this.request<T>("POST", path, body);
+    }
+
+    public async put<T>(path: string, body: unknown): Promise<T> {
+        return await this.request<T>("PUT", path, body);
+    }
+
+    public async patch<T>(path: string, body?: unknown): Promise<T> {
+        return await this.request<T>("PATCH", path, body ?? {});
+    }
+
+    public async delete<T>(path: string, options: DeleteOptionsWithBody): Promise<T>;
+    public async delete(path: string, options?: DeleteOptionsWithoutBody): Promise<boolean>;
+    public async delete<T>(
+        path: string,
+        options?: DeleteOptionsWithBody | DeleteOptionsWithoutBody
+    ): Promise<T | boolean> {
         const url = this.urlBase + path;
+
         const req = await fetch(url, {
-            method: 'POST',
+            method: "DELETE",
             headers: this.headers,
-            body: JSON.stringify(body)
         });
 
-        if (!req.ok) {
-            console.error(await req.text());
-            throw new Error(`Ocorreu um erro ao tentar acessar ${url}\n Erro: ${req.status}`);
+        const data = await this.parseResponseBody(req);
+
+        if (options?.body === true) {
+            if (data === undefined) {
+                throw new Error(`A resposta de DELETE em ${url} não retornou body.`);
+            }
+
+            return data as T;
         }
 
-        const data = await req.json();
-        return this.returnResponse<T>(data);
-    }
-
-    public async put<T>(path: string, body: Record<string, any>): Promise<T> {
-        const url = this.urlBase + path;
-        const req = await fetch(url, {
-            method: 'PUT',
-            headers: this.headers,
-            body: JSON.stringify(body)
-        });
-
-        if (!req.ok) {
-            console.error(await req.text());
-            throw new Error(`Ocorreu um erro ao tentar acessar ${url}\n Erro: ${req.status}`);
-        }
-
-        const data = await req.json();
-        return this.returnResponse<T>(data);
-    }
-
-    public async patch<T>(path: string, body?: Record<string, any>): Promise<T> {
-        const url = this.urlBase + path;
-        const req = await fetch(url, {
-            method: 'PATCH',
-            headers: this.headers,
-            body: JSON.stringify(body ?? {})
-        });
-
-        if (!req.ok) {
-            console.error(await req.text());
-            throw new Error(`Ocorreu um erro ao tentar acessar ${url}\n Erro: ${req.status}`);
-        }
-
-        const data = await req.json();
-        return this.returnResponse<T>(data);
-    }
-
-    public async delete(path: string): Promise<Boolean> {
-        const url = this.urlBase + path;
-        const req = await fetch(url, {
-            method: 'DELETE',
-            headers: this.headers
-        });
-
-        if (req.status >= 200 && req.status <= 300) {
-            return true;
-        } else {
-            console.error(await req.text());
-            console.error(`Ocorreu um erro ao tentar acessar ${url}\n Erro: ${req.status}`);
-            return false;
-        }
+        return req.ok;
     }
 }

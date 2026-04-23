@@ -19,4 +19,11 @@ export class PedidoOK {
         this.clientes = new PedidoOk_Clientes(this.http);
         this.pedidos = new PedidoOk_Pedidos(this.http);
     }
+
+    /**
+     * Feito para aqueles que querem usar o HttpClient diretamente, seja para acessar recursos não implementados ou para ter mais controle sobre as requisições.
+     */
+    public get client(): HttpClient {
+        return this.http;
+    }
 }
