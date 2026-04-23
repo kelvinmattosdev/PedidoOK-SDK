@@ -136,7 +136,7 @@ export class HttpClient {
             headers: this.headers
         });
 
-        if (req.status === 204) {
+        if (req.status >= 200 && req.status <= 300) {
             return true;
         } else {
             console.error(await req.text());
