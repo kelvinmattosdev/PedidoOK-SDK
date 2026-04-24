@@ -77,6 +77,20 @@ export class HttpClient {
         return await this.request<T>("PATCH", path, body ?? {});
     }
 
+    // TODO Foi implementado para testes, mas o resultado apenas mostrou que o endpoint 
+    // TODO para reativar o vendedor, realmente não existe! (404)
+    // public async patchNoContent(path: string, body?: unknown): Promise<boolean> {
+    //     const url = this.urlBase + path;
+
+    //     const req = await fetch(url, {
+    //         method: "PATCH",
+    //         headers: this.headers,
+    //         ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+    //     });
+
+    //     return req.ok;
+    // }
+
     public async delete<T>(path: string, options: DeleteOptionsWithBody): Promise<T>;
     public async delete(path: string, options?: DeleteOptionsWithoutBody): Promise<boolean>;
     public async delete<T>(

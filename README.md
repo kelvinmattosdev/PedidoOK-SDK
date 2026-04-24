@@ -27,6 +27,7 @@ Com ela, você pode consumir os principais recursos da API com uma interface mai
 - **Produtos**
 - **Clientes**
 - **Pedidos**
+- **Vendedores**
 
 A proposta da biblioteca é oferecer:
 
@@ -86,6 +87,7 @@ A SDK atualmente expõe os seguintes módulos:
 - `produtos`
 - `clientes`
 - `pedidos`
+- `vendedores`
 
 A instância principal da biblioteca organiza tudo por recurso:
 
@@ -136,6 +138,7 @@ main().catch(console.error);
 - [Uso por módulo](#uso-por-módulo)
   - [Produtos](#produtos)
   - [Clientes](#clientes)
+  - [Vendedores](#vendedores)
   - [Pedidos](#pedidos)
 - [Paginação com `href_proxima_pagina`](#paginação-com-href_proxima_pagina)
 - [Uso do `client` bruto](#uso-do-client-bruto)
@@ -159,18 +162,21 @@ src/
 ├── resources/
 │   ├── Produtos.ts
 │   ├── Clientes.ts
-│   └── Pedidos.ts
+│   ├── Pedidos.ts
+│   └── Vendedores.ts
 ├── types/
 │   ├── Global.types.ts
 │   ├── HttpClient.types.ts
 │   ├── PedidoOK.types.ts
 │   ├── Produtos.types.ts
 │   ├── Clientes.types.ts
-│   └── Pedidos.types.ts
+│   ├── Pedidos.types.ts
+│   └── Vendedores.types.ts
 ├── examples/
 │   ├── produtos/
 │   ├── clientes/
-│   └── pedidos/
+│   ├── pedidos/
+│   └── vendedores/
 └── index.ts
 ```
 
@@ -690,6 +696,201 @@ main().catch(console.error);
 
 ---
 
+## Vendedores
+
+O módulo `vendedores` cobre leitura, criação, atualização e exclusão de vendedores.
+
+### Métodos disponíveis
+
+- `buscarTodos(obj?)`
+- `buscarPorId(id)`
+- `inserirVendedor(obj)`
+- `alterarVendedor(id, obj)`
+- `alterarVendedorParcial(id, obj)`
+- `deletarVendedor(id)`
+
+---
+
+### Buscar vendedores
+
+```ts
+import { PedidoOK } from "pedidook-sdk";
+
+async function main() {
+  const client = new PedidoOK({
+    version: 1,
+    token_parceiro: "SEU_TOKEN_PARCEIRO",
+    token_pedidook: "SEU_TOKEN_PEDIDOOK"
+  });
+
+  const vendedores = await client.vendedores.buscarTodos({
+    excluido: false
+  });
+
+  console.log("Próxima página:", vendedores.href_proxima_pagina);
+
+  const vendedoresResumidos = vendedores.vendedores.map((vendedor) => ({
+    id: vendedor.id,
+    nome: vendedor.nome,
+    id_parceiro: vendedor.id_parceiro,
+    regiao: vendedor.regiao,
+    excluido: vendedor.excluido,
+    validade_licenca: vendedor.validade_licenca
+  }));
+
+  console.dir(vendedoresResumidos, { depth: null });
+}
+
+main().catch(console.error);
+```
+
+---
+
+### Buscar vendedor por ID
+
+```ts
+import { PedidoOK } from "pedidook-sdk";
+
+async function main() {
+  const client = new PedidoOK({
+    version: 1,
+    token_parceiro: "SEU_TOKEN_PARCEIRO",
+    token_pedidook: "SEU_TOKEN_PEDIDOOK"
+  });
+
+  const resposta = await client.vendedores.buscarPorId(12345678);
+
+  console.log("Vendedor encontrado:");
+  console.dir(resposta.vendedor, { depth: null });
+}
+
+main().catch(console.error);
+```
+
+---
+
+### Inserir vendedor
+
+```ts
+import { PedidoOK } from "pedidook-sdk";
+import type { Vendedores_InserirVendedorObjReq } from "pedidook-sdk";
+
+async function main() {
+  const client = new PedidoOK({
+    version: 1,
+    token_parceiro: "SEU_TOKEN_PARCEIRO",
+    token_pedidook: "SEU_TOKEN_PEDIDOOK"
+  });
+
+  const novoVendedor: Vendedores_InserirVendedorObjReq = {
+    nome: "Vendedor de Exemplo",
+    id_parceiro: "vendedor-externo-001",
+    regiao: "SP",
+    informacao_adicional: "Vendedor criado via SDK"
+  };
+
+  const resposta = await client.vendedores.inserirVendedor(novoVendedor);
+
+  console.log("Vendedor criado com sucesso:");
+  console.dir(resposta, { depth: null });
+}
+
+main().catch(console.error);
+```
+
+> Para inserir um vendedor, é necessário haver uma licença disponível no PedidoOK.
+
+---
+
+### Alterar vendedor completamente
+
+```ts
+import { PedidoOK } from "pedidook-sdk";
+import type { Vendedores_AlterarVendedorObjReq } from "pedidook-sdk";
+
+async function main() {
+  const client = new PedidoOK({
+    version: 1,
+    token_parceiro: "SEU_TOKEN_PARCEIRO",
+    token_pedidook: "SEU_TOKEN_PEDIDOOK"
+  });
+
+  const dadosAtualizados: Vendedores_AlterarVendedorObjReq = {
+    nome: "Vendedor Alterado",
+    id_parceiro: "vendedor-externo-001",
+    regiao: "SP",
+    informacao_adicional: "Vendedor atualizado por PUT"
+  };
+
+  const resposta = await client.vendedores.alterarVendedor(12345678, dadosAtualizados);
+
+  console.log("Vendedor alterado com sucesso:");
+  console.dir(resposta, { depth: null });
+}
+
+main().catch(console.error);
+```
+
+> Use `PUT` quando quiser atualizar o registro inteiro. Campos omitidos podem ser gravados com valor padrão pela API.
+
+---
+
+### Alterar vendedor parcialmente
+
+```ts
+import { PedidoOK } from "pedidook-sdk";
+import type { Vendedores_AlterarVendedorParcialObjReq } from "pedidook-sdk";
+
+async function main() {
+  const client = new PedidoOK({
+    version: 1,
+    token_parceiro: "SEU_TOKEN_PARCEIRO",
+    token_pedidook: "SEU_TOKEN_PEDIDOOK"
+  });
+
+  const alteracoesParciais: Vendedores_AlterarVendedorParcialObjReq = {
+    nome: "Vendedor Alterado Parcialmente",
+    regiao: "SP",
+    informacao_adicional: "Atualização parcial via PATCH"
+  };
+
+  const resposta = await client.vendedores.alterarVendedorParcial(12345678, alteracoesParciais);
+
+  console.log("Vendedor alterado parcialmente com sucesso:");
+  console.dir(resposta, { depth: null });
+}
+
+main().catch(console.error);
+```
+
+---
+
+### Deletar vendedor
+
+```ts
+import { PedidoOK } from "pedidook-sdk";
+
+async function main() {
+  const client = new PedidoOK({
+    version: 1,
+    token_parceiro: "SEU_TOKEN_PARCEIRO",
+    token_pedidook: "SEU_TOKEN_PEDIDOOK"
+  });
+
+  const sucesso = await client.vendedores.deletarVendedor(12345678);
+
+  console.log(
+    sucesso
+      ? "Vendedor excluído com sucesso."
+      : "A exclusão não retornou sucesso."
+  );
+}
+
+main().catch(console.error);
+```
+
+---
+
 ## Pedidos
 
 O módulo `pedidos` cobre leitura, criação, atualização de cabeçalho, atualização de itens, inserção de itens, exclusão e reativação.
@@ -1049,6 +1250,7 @@ A biblioteca também exporta as tipagens públicas, permitindo escrever código 
 import type { Clientes_InserirObj } from "pedidook-sdk";
 import type { Pedidos_InserirPedidoObjReq } from "pedidook-sdk";
 import type { Produtos_BuscarTodosObjReq } from "pedidook-sdk";
+import type { Vendedores_InserirVendedorObjReq } from "pedidook-sdk";
 ```
 
 ### Tipos disponíveis
@@ -1061,6 +1263,7 @@ A SDK exporta, entre outros:
 - `Produtos_*`
 - `Clientes_*`
 - `Pedidos_*`
+- `Vendedores_*`
 
 Isso facilita:
 
@@ -1190,8 +1393,16 @@ A instalação da biblioteca é **via npm**.
 
 ---
 
-## Autor
+## Author
 
-Desenvolvido com foco em produtividade, tipagem forte e integração limpa com a API do PedidoOK.
+**Kelvin Kauan Melo Mattos**  
+Software Developer • API Integrations • TypeScript
 
-Se este projeto te ajudar, deixe uma estrela no repositório e acompanhe as próximas versões.
+Desenvolvido com foco em:
+
+- produtividade
+- tipagem forte
+- integração limpa com a API do PedidoOK
+- arquitetura previsível e reutilizável
+
+Se este projeto te ajudar, considere deixar uma ⭐ no repositório.

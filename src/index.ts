@@ -8,3 +8,4 @@ export * from "./types/PedidoOK.types";
 export * from "./types/Produtos.types";
 export * from "./types/Clientes.types";
 export * from "./types/Pedidos.types";
+export * from "./types/Vendedores.types";

@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 # Meu arquivo de teste
 src/examples/index.ts
+
+# arquivo gerado pelo codex ao criar os exemplos de uso
+.codex
