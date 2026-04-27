@@ -33,11 +33,16 @@ export class PedidoOk_Produtos {
         try {
             const url = new URL(href);
             const relative = `${url.pathname}${url.search}`;
-            if (!relative.startsWith(this.path)) {
+
+            // Remove prefixo de versão como /v1, /v2, /v123, etc.
+            const withoutVersion = relative.replace(/^\/v\d+/, "");
+
+            if (!withoutVersion.startsWith(this.path)) {
                 throw new Error(`O href não pertence ao recurso ${this.path}: ${href}`);
             }
-            return relative;
-        } catch {
+
+            return withoutVersion;
+        } catch (err) {
             if (href.startsWith(this.path)) return href;
             throw new Error(`Href inválido para ${this.path}: ${href}`);
         }
