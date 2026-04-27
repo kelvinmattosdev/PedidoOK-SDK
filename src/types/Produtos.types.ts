@@ -107,10 +107,13 @@ export type Produtos_ReativarProductRespOk = {
     produto: Produtos_PedidoOkProduto;
 };
 
-export type Produtos_InserirProdBody = Omit<
+export type Produtos_InserirProdBody = Partial<Omit<
     Produtos_PedidoOkProduto,
-    "excluido" | "ultima_alteracao" | "id"
->;
+    "excluido" | "ultima_alteracao" | "id" | //? Não dá para "criar"
+    "codigo" | "nome" | "embalagem" | "id_parceiro" //? Obrigatórios
+>> & Required<Pick<Produtos_PedidoOkProduto,
+    "codigo" | "nome" | "embalagem" | "id_parceiro"
+>>
 
 export type Produtos_AlterarProduct = Omit<
     Produtos_PedidoOkProduto,
