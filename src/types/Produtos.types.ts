@@ -12,7 +12,7 @@ export type Produtos_PedidoOkProduto = {
     qtd_embalagem: number;
     categoria: string | null;
     nome: string;
-    id_parceiro: string;
+    id_parceiro: string | null;
     grades: string[];
     validade: ISODateOnlyString | null;
     estoque: number;
