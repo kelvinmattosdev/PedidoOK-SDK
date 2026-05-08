@@ -192,14 +192,26 @@ export type Pedidos_InserirPedidoObjReq = Partial<
         | "emissao"
         | "id_parceiro"
         | "status"
+        | "itens"
     >
-> &
-    Required<
-        Pick<
-            Pedidos_Pedido,
-            "id_cliente" | "id_vendedor" | "emissao" | "id_parceiro" | "status"
+> & Required<
+    Pick<
+        Pedidos_Pedido,
+        "id_cliente" | "id_vendedor" | "emissao" | "id_parceiro" | "status"
+    >
+> & {
+    itens?: Array<
+        Required<
+            Pick<
+                Pedidos_Item, "quantidade" | "embalagem" | "id_produto"
+            >
+        > & Partial<
+            Omit<
+                Pedidos_Item, "quantidade" | "embalagem" | "id_produto"
+            >
         >
-    >;
+    >
+};
 
 export type Pedidos_InserirPedidoRespOk = {
     pedido: Pedidos_Pedido;
