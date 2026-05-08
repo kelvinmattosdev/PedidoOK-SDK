@@ -119,7 +119,7 @@ export type Pedidos_Pedido = {
      * A doc de exemplo mostra "pedido".
      * Mantido como string para não restringir excessivamente.
      */
-    status: string;
+    status: "troca" | "bonificacao" | "orcamento" | "pedido";
 };
 
 export type Pedidos_Cabecalho = Omit<
